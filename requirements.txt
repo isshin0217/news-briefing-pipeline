@@ -1,0 +1,14 @@
+# 아크메 주간 뉴스레터 파이프라인 의존 패키지
+# 설치:  python -m pip install -r requirements.txt
+
+feedparser
+requests
+deep-translator
+python-dotenv
+# article_body.py 의 본문 추출용 (1_fetch_news.py 가 수집 직후 호출한다)
+beautifulsoup4
+
+# pywin32 는 4_send_email.py --outlook (로컬 PC에서 Outlook 초안 띄우기) 전용이다.
+# 서버 무인 실행은 SMTP 경로(--yes)를 쓰므로 설치할 필요가 없다.
+# 로컬 PC에서 수동 발송도 쓰려면 아래 주석을 풀 것.
+# pywin32

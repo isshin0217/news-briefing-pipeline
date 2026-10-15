@@ -1,0 +1,738 @@
+{
+  "_readme": [
+    "주간 피드백을 회귀 테스트로 굳혀 두는 파일이다. 7_watch.py 가 매번 돌린다.",
+    "지금까지는 피드백의 근거를 소스 주석에만 남겼는데, 주석은 다시 실행되지 않는다.",
+    "그래서 나중에 키워드를 손보다가 예전에 고친 문제를 되살려도 아무도 모른다.",
+    "",
+    "케이스는 두 종류다.",
+    "  drop  — 지적받은 기사. 수집 단계(make_article)에서 제외되어야 한다.",
+    "  keep  — '감시 케이스'. 제외 규칙이 과하게 넓어지면 실패하도록 짝으로 넣어 둔 것.",
+    "          예: 'EU ETS 배출권' 은 노조와 아무 상관 없지만, 영문 노사 목록에",
+    "          'union' 단독을 넣는 순간 European Union 이 걸려 사라진다. 그때 터진다.",
+    "          제외 규칙을 새로 만들 때는 이 짝을 함께 넣을 것.",
+    "필드: title(필수), summary(선택), body(선택), expect, why(피드백 근거), date(피드백 받은 날)",
+    "  body 를 넣으면 본문 단계 필터(증권 리포트 인용 기사)까지 태운다.",
+    "",
+    "\"todo\": true 는 'LLM 지적을 승격했지만 아직 거르는 규칙을 안 만들었다'는 표시다.",
+    "  실패해도 '심각'이 아니라 '미해결 지적'(주의)으로 보고돼 발송을 막지 않는다.",
+    "  1_fetch_news.py 를 손봐 통과시킨 뒤 이 표시를 지우면 보통 케이스가 된다.",
+    "LLM 검수 지적은 watch_candidates.json 에 먼저 쌓인다. 여기로 옮기는 건 사람이 한다:",
+    "  python 7_watch.py --candidates / --promote <번호> / --reject <번호>"
+  ],
+  "cases": [
+    {
+      "title": "'대홍수' 한국인 9명은 어디에...필사의 수색",
+      "summary": "위성통신과 항해 정보, 쇄빙 내빙 능력, 사고발생 시 구조구난 체계까지 함께 갖춰야 합니다. 국제해사기구도 이런 특수한 위험 때문에 폴라코드라는 것을 통해서 선박의 구조와 장비, 운항, 선원 훈련을 규정합니다.",
+      "expect": "drop",
+      "why": "방송 종합뉴스. 제목엔 해사어가 없고 다른 꼭지의 쇄빙·내빙·폴라코드로 15점을 벌어 게재됐다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "한국공학대 교원창업기업, 팁스 선정",
+      "summary": "중소벤처기업부의 민간투자주도형 기술창업지원 팁스에 선정됐다.",
+      "expect": "drop",
+      "why": "해사 기사가 아닌데 20점으로 상위에 올랐다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "李, 민주당 지도부·의원단 연쇄 회동…당청 결속 강화[오늘아침]",
+      "summary": "북극항로 시범운항 소식도 함께 전해드립니다.",
+      "expect": "drop",
+      "why": "시각별 헤드라인 묶음. 개별 사안이 없다.",
+      "date": "2026-08-24"
+    },
+    {
+      "title": "동남권 4대 성장엔진 확정…'초격차 제조 AI 벨트' 시동",
+      "summary": "부산·울산·경남이 제조 AI 벨트를 조성한다.",
+      "expect": "drop",
+      "why": "지역 산업정책 기사. 해사 주제가 아니다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "[MT포토] 조아연, HJ중공업 멋져요",
+      "summary": "HJ중공업 골프단 소속 조아연 선수가 갤러리에 인사하고 있다.",
+      "expect": "drop",
+      "why": "회사명이 스폰서로만 등장. 사업 소식이 아니다.",
+      "date": "2026-08-24"
+    },
+    {
+      "title": "조선에 가렸던 삼성重 토건…반도체 훈풍에 삼성전자 관련 매출 50% 급증",
+      "summary": "삼성중공업 토건 부문 매출이 늘었다.",
+      "expect": "drop",
+      "why": "'삼성중공업 토건 부문은 조선이랑 상관없잖아' — 조선·해운이 아닌 사업부문.",
+      "date": "2026-08-25"
+    },
+    {
+      "title": "HD현대重 노조 파업권 확보…'N%성과급' 조선업계 확산 긴장",
+      "summary": "노조가 쟁의행위 찬반투표를 가결했다.",
+      "expect": "drop",
+      "why": "'노조 기사는 확실히 조정해줘, 필요하지 않아'",
+      "date": "2026-08-25"
+    },
+    {
+      "title": "삼성중공업-KAIST '차세대 선박연구센터' 출범",
+      "summary": "양측은 자율운항 선박 기술 공동연구를 위한 센터를 설립했다.",
+      "expect": "drop",
+      "why": "'센터 생성 이런 건 필요 없어' — 조직 신설 발표는 후속이 없다.",
+      "date": "2026-08-25"
+    },
+    {
+      "title": "국립목포해양대, 해운업계 50억 지원 업고 북극항로 인재 허브 도약",
+      "summary": "해운업계가 50억원을 지원해 북극항로 전문인력을 양성한다.",
+      "expect": "drop",
+      "why": "'목포해양대 인재허브 이런 건 필요 없다'",
+      "date": "2026-08-24"
+    },
+    {
+      "title": "HD현대중공업 투자분석 2026. 08. 29 - 주달",
+      "summary": "목표주가와 실적 전망을 정리했다.",
+      "expect": "drop",
+      "why": "투자자용 종목분석. 기술개발팀과 무관한데 18점으로 고객사 카드에 실렸다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "안개·어둠 뚫는 '선박의 AI 눈', 시흥 한국공학대 교원창업 TIPS 선정",
+      "summary": "한국공학대 교원창업기업이 중소벤처기업부 팁스에 선정됐다.",
+      "expect": "drop",
+      "why": "'공학대 교원창업기업 팁스 선정 이런 건 필요도 없는데' — 지원 대상 선정 발표.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "한국해양대, 정보보호특성화대학 지원사업 선정",
+      "summary": "과기정통부 정보보호 특성화대학 지원사업에 선정됐다.",
+      "expect": "drop",
+      "why": "같은 유형. 아직 아무 일도 일어나지 않은 소식이다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "Strike looms as HD Hyundai Heavy union backs industrial action",
+      "summary": "The union voted in favour of industrial action at the shipyard.",
+      "expect": "drop",
+      "why": "'기타에 아직도 노조가 파업을 지지함 이런 게 나옴' — 노사 목록이 한글뿐이라 영문판이 통과했다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "HMM, 동아프리카 서비스 확대",
+      "summary": "HMM이 동아프리카 항로 서비스를 9월부터 확대한다.",
+      "expect": "drop",
+      "why": "'HMM 동아프리카 서비스 확대도 우리랑은 별로 상관 없는 것 같음' — 정기선 서비스 개편.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "[개장 전 주요 공시] HD현대중공업·코오롱·한화엔진·JW중외제약 등",
+      "summary": "주요 공시를 정리했다.",
+      "expect": "drop",
+      "why": "개별 사안이 없는 공시 묶음.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "EU ETS 해운 배출권 거래제 확대 논의",
+      "summary": "유럽연합이 해운 배출권 거래제 적용 범위를 넓히는 방안을 논의한다.",
+      "expect": "keep",
+      "why": "감시 케이스(노조와 무관). 영문 노사 목록에 'union' 단독을 넣으면 European Union이 걸려 EU 규제 기사가 통째로 사라진다. 그 순간 이 케이스가 실패해 알려준다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "팬스타, 국내 최초 컨테이너선 북극항로 취항",
+      "summary": "부산신항을 출항해 북극항로 시범운항에 나선다.",
+      "expect": "keep",
+      "why": "감시 케이스. 정기선 서비스 개편 필터가 새 항로 개척까지 잡으면 안 된다 — 북극항로는 아이스네비게이션 사업 직결이다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "해무·야간에도 선박 위험물 실시간 감지…한국공학대 교원기업 아이케이에랩",
+      "summary": "아이케이에랩이 해양 저시정 안전운항 지원 엣지 AI 기술로 TIPS에 선정됐다.",
+      "expect": "drop",
+      "why": "'교원창업 TIPS 선정'을 막았더니 표현만 '교원기업'으로 바꿔 되돌아와 기술 동향 TOP4를 차지했다. 같은 기사, 다른 표기.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "Another Worker Dies at HD Hyundai Heavy Industries Amid Labor Dispute",
+      "summary": "A subcontractor worker died at the shipyard, the second fatality this year.",
+      "expect": "drop",
+      "why": "산재의 영문판. 'dies'가 인명 피해어 목록에 없어 통과했다(‘died’만 있었다) — 영문은 단어 단위 판정이라 활용형을 다 적어야 한다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "HD현대마린솔루션, 림 드라이브 터널 스러스터 범위 확장",
+      "summary": "HD현대마린솔루션이 림 드라이브 방식 터널 스러스터 제품군을 확대한다.",
+      "expect": "keep",
+      "why": "감시 케이스. '터널'을 비조선 사업부문 목록에 단독으로 넣으면 선박 추진 장치인 '터널 스러스터'가 걸린다. (2026-10-06: 회사명을 Kongsberg → HD현대마린솔루션(경쟁사 태그 경로 유지) 로 바꿨다. 콩스버그는 자율운항 기사만 싣게 되어 이 감시가 엉뚱한 이유로 실패했다 — 감시 대상은 회사가 아니라 '터널'/'appointed' 판정이다.)",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "UKHO to mark one year of S-100 trials at SMM 2026",
+      "summary": "The UK Hydrographic Office will mark the first anniversary of its S-100 sea trials at SMM 2026.",
+      "expect": "drop",
+      "why": "'이것도 별로 쓸데없는 기사 같음' — 주제(S-100)는 맞지만 전시회 1주년 기념 안내라 사업·기술 소식이 없다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "울산 조선해양 중소기업 6곳 유럽 수출길 모색",
+      "summary": "울산시가 조선해양 중소기업 6곳의 유럽 수출 상담회 참가를 지원한다.",
+      "expect": "drop",
+      "why": "지자체 수출 지원사업 홍보. 기업 개별 소식이 아니다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "Singapore adds Brazil to green shipping corridor network",
+      "summary": "Singapore has added Brazil as its 10th green and digital shipping corridor partner.",
+      "expect": "drop",
+      "why": "나라끼리 MOU 를 맺었다는 발표 자체이고 후속이 없다 — 센터 출범 발표와 같은 성격.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "“2035년까지 친환경선박 889척 보급”… 세계 첫 ‘녹색해운항로법’ 시행",
+      "summary": "정부가 2035년까지 친환경선박 889척을 보급하는 제2차 기본계획을 확정하고 녹색해운항로법을 시행한다.",
+      "expect": "keep",
+      "why": "감시 케이스. '해운 회랑' 필터가 국내 정책 기사까지 잡으면 안 된다 — 실제로 시행되는 제도다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "HD Hyundai Heavy Industries - RealClearDefense",
+      "summary": "HD Hyundai Heavy Industries  RealClearDefense",
+      "expect": "drop",
+      "why": "언론사명을 떼면 제목이 회사명뿐 — 무슨 일이 있었는지가 없다. 고객사 태그로 16점을 받았다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "현대글로비스, 항공포워딩 사업 확대...북미·유럽 향 화장품·음반 운송",
+      "summary": "현대글로비스가 화장품과 음반 등 소비재를 중심으로 항공 포워딩 사업을 확대한다.",
+      "expect": "drop",
+      "why": "항공 화물은 해운이 아니다 — 삼성중공업 토건과 같은 비해사 사업부문 유형.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "해운 상장기업 브랜드 8월 빅데이터 분석결과, 흥아해운 3위 고수 눈길...1위 HMM, 2위 팬오션",
+      "summary": "해운 상장기업 브랜드 평판 순위를 집계했다.",
+      "expect": "drop",
+      "why": "브랜드 평판 순위 나열. 사업·기술 소식이 아닌데 고객사 태그로 17점을 받았다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "“AI·빅데이터 공급망 가시성 확보, 해운·항만 생존 조건”",
+      "summary": "AI와 빅데이터를 비롯해 자율운항, 자동화, IoT 등 첨단기술이 산업구조를 바꾸고 있다.",
+      "expect": "keep",
+      "why": "감시 케이스. 브랜드 순위 필터에 '빅데이터' 단독을 넣으면 이 정상 기사가 날아간다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "삼성重도 '피지컬 AI' 도입 빨라진다",
+      "summary": "삼성중공업이 오르카 AI와 협력해 자율형 조선소 개발을 가속화한다.",
+      "expect": "keep",
+      "why": "감시 케이스. 회사명뿐인 제목 필터가 '남은 말이 해사어인가'로 판정하면 이 기사가 걸린다 — 글자가 남았는지로만 봐야 한다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "HD현대중공업 복지시설서 협력업체 직원 숨져",
+      "summary": "복지시설에서 협력업체 직원이 숨진 채 발견돼 경찰이 조사 중이다.",
+      "expect": "drop",
+      "why": "'산재 사망 이런거 제외해' — 작업장 인명사고는 고객사 동향이 아니다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "HD Hyundai Heavy Industries Faces Probe After Fatal Workplace Accident",
+      "summary": "Authorities opened an investigation after a worker died at the shipyard.",
+      "expect": "drop",
+      "why": "위 기사의 영문판. 국문·영문 3벌이 수집돼 그중 하나가 카드에 실렸다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "HD현대중공업, 보일러실서 근로자 1명 사망",
+      "summary": "보일러실에서 작업하던 근로자가 사망했다.",
+      "expect": "drop",
+      "why": "같은 사안 세 번째 판본.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "[자유항행시대의 종말과 과제] ③ 전문가 인터뷰",
+      "summary": "내빙선박 건조비와 쇄빙선 지원료, 보험료, 통항료도 추가된다. 항만·통신·수색구조·선박 수리시설이 부족하다는 점도 한계다.",
+      "expect": "drop",
+      "why": "'전문가 인터뷰 삭제해줘' — 코너명 '[자유항행…]'의 '항행'으로 제목 게이트를 통과했다. 코너명을 떼면 남는 제목은 '전문가 인터뷰'뿐이라 무슨 기사인지 알 수 없다. 13점으로 실렸다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "AI로 북극해 유빙 정보 분석해 안전 항해 이끈다 [마린 유니콘]",
+      "summary": "북극해 유빙 정보를 AI로 분석해 안전 항로를 안내하는 기술을 소개한다.",
+      "expect": "keep",
+      "why": "감시 케이스. 코너명을 떼고 제목 게이트를 보게 했는데, 코너를 뗀 뒤에도 해사어가 남는 정상 기사는 살아야 한다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "[특집] 북극항로 시범운항 출항",
+      "summary": "국내 첫 컨테이너선 북극항로 시범운항이 시작됐다.",
+      "expect": "keep",
+      "why": "감시 케이스. 코너를 떼고 남은 제목이 짧아도(strip_corner 의 min_left) 해사어가 있으면 실려야 한다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "여객선 침몰로 승객 3명 사망…해경 수색 중",
+      "summary": "여객선이 침몰해 승객 3명이 숨지고 해경이 수색에 나섰다.",
+      "expect": "drop",
+      "why": "'해양사고 기사도 미수집 되는 게 맞다' — 오전에 keep 으로 넣었다가 같은 날 뒤집힌 케이스다. 사건사고 보도에는 기술개발팀이 쓸 정보가 없다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "화물선 좌초, 선원 8명 전원 구조",
+      "summary": "좌초한 화물선에서 선원 8명이 모두 구조됐다.",
+      "expect": "drop",
+      "why": "인명피해가 없어도 수색구조 보도는 같은 유형이다. '구조'를 활용형으로만 잡는 게 실제로 동작하는지 확인한다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "선박 충돌 방지 AI 시스템 개발 착수",
+      "summary": "충돌 위험을 사전에 경고하는 항법 지원 시스템을 개발한다.",
+      "expect": "keep",
+      "why": "감시 케이스. 사고어 단독으로 걸면 안 된다 — '충돌 방지'·'좌초 위험 예측'은 아크메가 파는 항법 제품의 설명 그 자체다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "IMO, 극지 운항 안전기준 폴라코드 개정 논의",
+      "summary": "국제해사기구가 빙해 항행 선박의 구조와 장비, 선원 훈련 규정을 손본다.",
+      "expect": "keep",
+      "why": "감시 케이스. 사고를 계기로 한 규제·안전기준 기사는 남긴다. '선박의 구조'가 수색구조어에 걸리면 여기서 터진다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "유조선 좌초, 기름 유출 방제 작업 이틀째",
+      "summary": "좌초한 유조선에서 유출된 기름을 막는 방제 작업이 이어지고 있다.",
+      "expect": "keep",
+      "why": "감시 케이스. 제외 범위는 '인명피해·수색구조'로 정했다 — 환경 사고까지 넓히면 이 케이스가 실패해 알려준다.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "해운협회, 국적선사 'AI 전환' 본궤도 올린다…9월 2일 부산서 AX 기술설명회",
+      "summary": "참가 기업은 HD현대마린솔루션, LG CNS, 한국선급(KR), 콩스버그마리타임, 아크메, 팀리부뜨, 랍코리아, 조광페인트 등이다.",
+      "expect": "keep",
+      "why": "'아크메 기사 왜 없는지? 무조건 싣도록' — 제목의 '설명회'로 행사 노이즈에 걸리던 건.",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "팬스타 아크로호, 국내 첫 컨테이너선 북극항로 시범운항 출항",
+      "summary": "부산신항을 출항해 45일 대장정에 나선다.",
+      "expect": "keep",
+      "why": "'되게 중요한 사건'. 아이스네비게이션은 아크메 사업이다.",
+      "date": "2026-08-24"
+    },
+    {
+      "title": "HMM, 선박 항로 최적화에서 화주 챗봇까지 전방위 AI 이식",
+      "summary": "HMM이 항로 최적화와 화주 응대에 AI를 도입한다.",
+      "expect": "keep",
+      "why": "고객사 AI 도입 소식. '현대상선' 한정어 때문에 누락됐던 건.",
+      "date": "2026-08-10"
+    },
+    {
+      "title": "UKHO begins S-100 Admiralty chart service for ECDIS carriage",
+      "summary": "The UK Hydrographic Office has started delivering S-100 standard electronic charts to vessels.",
+      "expect": "keep",
+      "why": "S-100/ENC 는 전사 주력 상품에 걸린 표준이라 배경 지식으로 실려야 한다. 회사명만 스친 기사를 막는 관문이 규제 태그 기사까지 잡던 버그(2026-09-01 수정)의 감시 케이스이기도 하다. 같은 UKHO라도 '전시회 1주년 기념'은 제외 대상이다 — 아래 케이스 참고.",
+      "date": "2026-08-24"
+    },
+    {
+      "title": "경상국립대, AI 기반 선박 자율 계류·묘박 시스템 개발 착수",
+      "summary": "자율운항 선박의 접안 자동화 기술을 개발한다.",
+      "expect": "keep",
+      "why": "대학 기사라도 기술 개발 건은 남아야 한다(인재양성 기사와 구분).",
+      "date": "2026-08-24"
+    },
+    {
+      "title": "ZeroNorth launches agentic AI for voyage optimisation",
+      "summary": "The platform automates voyage planning decisions for fleet operators.",
+      "expect": "keep",
+      "why": "경쟁 제품 출시 소식인데 2점으로 최하위권이었다.",
+      "date": "2026-08-25"
+    },
+    {
+      "title": "HD Hyundai Heavy retirees lose lawsuit seeking to include bonuses in severance pay - 헤럴드경제",
+      "summary": "HD 현대중공업 퇴직자들, 퇴직금에 상여금 포함 요구 소송 패소 헤럴드경제",
+      "expect": "drop",
+      "why": "LLM 검수 지적(사내, 1회) — HD현대중공업 퇴직자들의 퇴직금 관련 소송 패소 소식으로 아크메 사업 및 기술 개발과 무관한 사내 노사 이슈입니다. 2026-09-21 LABOR_NOISE_KEYWORDS 에 '퇴직금'·'severance pay' 등 임금 소송 표현을 넣어 막았다(승격 3주 만에 해결).",
+      "date": "2026-09-01"
+    },
+    {
+      "title": "Synup, Sydekick AI 출시, 로컬 마케팅을 소프트웨어 주도 작업에서 자율 실행으로 전환 - Big News Network.com",
+      "summary": "Synup, Sydekick AI 출시로 로컬 마케팅을 소프트웨어 주도 작업에서 자율 실행으로 전환 Big News Network.com",
+      "expect": "drop",
+      "why": "LLM 검수 지적(무관, 1회) — 해사 산업과 무관한 일반 로컬 마케팅 AI 소프트웨어 관련 기사입니다.",
+      "date": "2026-09-07"
+    },
+    {
+      "title": "이 기사는 M.의 자본시장 전문 유료언론 '레이더M'에 보도되었습니다. - 매일경제",
+      "summary": "This article was reported on \"Radar M,\" a paid media outlet specializing in the capital market in M..  매일경제",
+      "expect": "drop",
+      "why": "LLM 검수 지적(무관, 1회) — 해사 산업 관련 내용이 전혀 없는 자본시장 유료 기사 안내문입니다. 2026-09-07 DIGEST_NOISE_KEYWORDS 에 유료 매체 안내문 표현을 넣어 막았다.",
+      "date": "2026-09-07"
+    },
+    {
+      "title": "한국선급, 부산 초중고에 발전기금 1억1천만원 기탁 - 코리아쉬핑가제트",
+      "summary": "한국선급, 부산 초중고에 발전기금 1억1천만원 기탁  코리아쉬핑가제트",
+      "expect": "drop",
+      "why": "LLM 검수 지적(홍보, 1회) — 기여금 기탁 소식으로 사업 내용 없이 기업 이미지를 홍보하는 기사입니다.",
+      "date": "2026-09-07"
+    },
+    {
+      "title": "대한해운, 목포해양대에 발전기금…40년 산학협력으로 해운 인재 육성",
+      "summary": "사진=대한해운 해운업계가 선박 경쟁력과 함께 현장 전문인력 확보를 핵심 과제로 삼고 있는 가운데 대한해운이 대학과의 장기 산학협력을 통해 미래 해기사 양성에 나서고 있다.",
+      "expect": "drop",
+      "why": "2026-09-21 피드백. 기부(발전기금)+인재육성 기사다. '기탁' 없이 '발전기금'만 쓰고 '인재 육성'으로 이어 두 목록을 모두 빠져나갔다 — DONATION_NOISE_KEYWORDS 에 '발전기금', EVENT_NOISE_TITLE_KEYWORDS 에 '인재 육성'을 넣어 막았다.",
+      "date": "2026-09-21"
+    },
+    {
+      "title": "Noatum Maritime targets USD 27 million in savings with AI fleet platform",
+      "summary": "Noatum Maritime has launched Milahi, an AI-driven fleet management platform expected to deliver USD 27 million in savings.",
+      "expect": "drop",
+      "why": "2026-09-21 피드백. 사건이 아니라 도입사가 내세운 기대 절감액이 제목인 홍보 기사다(기술 동향 TOP2 를 차지했다). VENDOR_PROMO_PATTERNS 로 '동사+절감 명사' 형태일 때만 잡는다.",
+      "date": "2026-09-21"
+    },
+    {
+      "title": "배만 보던 HD현대마린솔루션, 이젠 데이터센터 엔진까지 잡는다",
+      "summary": "HD현대마린솔루션이 선박 유지보수 사업을 넘어 데이터센터용 발전엔진 시장으로 영역을 넓히고 있다.",
+      "body": "HD현대마린솔루션이 데이터센터용 발전엔진 시장으로 영역을 넓힌다. SK증권은 최근 보고서에서 엔진 생산능력 확대가 유지보수 매출 증가로 이어질 것이라고 밝혔다. 목표주가 9만원, 투자의견은 매수를 제시했다.",
+      "expect": "drop",
+      "why": "2026-09-21 피드백. 제목에는 주식 신호어가 없어 제목 필터로는 구조적으로 못 잡는다. 본문 단계에서 ANALYST_BODY_KEYWORDS/PATTERNS 로 막는다.",
+      "date": "2026-09-21"
+    },
+    {
+      "title": "정부, 친환경 선박 산업 육성 대책 발표…중소 기자재사 기술개발 지원",
+      "summary": "정부가 친환경 선박 산업 육성을 위한 기술개발 지원 대책을 내놨다.",
+      "expect": "keep",
+      "why": "감시 케이스(인재육성 필터 짝). EVENT_NOISE 에 '육성' 단독을 넣으면 산업 육성 정책 기사가 통째로 사라진다. 그래서 '인재 육성'·'인력 육성'처럼 사람을 가리킬 때만 잡는다.",
+      "date": "2026-09-21"
+    },
+    {
+      "title": "해양수산부, 친환경 선박 전환 지원기금 3000억원 조성",
+      "summary": "정부가 친환경 선박 전환을 돕는 지원기금을 조성한다.",
+      "expect": "keep",
+      "why": "감시 케이스(발전기금 필터 짝). DONATION_NOISE 에 '기금' 단독을 넣으면 정책 기금 기사가 사라진다. '발전기금'·'기금 전달'처럼 금품 전달을 뜻할 때만 잡는다.",
+      "date": "2026-09-21"
+    },
+    {
+      "title": "EU ETS 확대로 선사 연료비 절감 압박 커져…IMO 규제도 강화",
+      "summary": "배출권 비용이 늘면서 선사들이 연료비 절감 압박을 받고 있다.",
+      "expect": "keep",
+      "why": "감시 케이스(절감액 홍보 필터 짝). '절감'·'savings' 단독을 넣으면 규제·비용 기사가 통째로 사라진다. 그래서 '주체가 절감액을 내세우는' 형태일 때만 잡는다.",
+      "date": "2026-09-21"
+    },
+    {
+      "title": "삼성중공업, 1조 6476억 규모 LNG운반선 수주…목표 초과 달성",
+      "summary": "삼성중공업이 오세아니아 선주와 대형 선박 건조 계약을 체결했다.",
+      "body": "삼성중공업이 오세아니아 선주와 1조 6476억원 규모 계약을 체결했다. 수주 목표 초과 달성 소식에 유가증권시장에서 삼성중공업 주가는 4.21% 상승했다. 클락슨리서치 집계에 따르면 상반기 세계 신조선 발주량은 증가했다.",
+      "expect": "keep",
+      "why": "감시 케이스(증권 리포트 필터 짝). 본문 단계에 '주가'·'증권'·'리서치' 같은 넓은 말을 넣으면 정상 수주 기사가 사라진다(실측: 이 기사 본문에 '유가증권시장'·'주가'·'클락슨리서치'가 모두 있다). '투자의견'·'목표주가'·'증권 연구원'처럼 리포트에만 쓰는 말로 좁혀 둔다.",
+      "date": "2026-09-21"
+    },
+    {
+      "title": "YOUNG ACHIEVERS: IIT Madras Ocean Engineering students win Njord Autonomous Ship Challenge in Norway",
+      "summary": "A student team from IIT Madras won the Njord Autonomous Ship Challenge held in Norway.",
+      "expect": "drop",
+      "why": "2026-09-21 피드백. 주제는 자율운항이 맞지만 학생 팀 대회 우승 소식이라 업계 영향이 없다. PROMO 의 '수상' 감점(-5)만으로는 15점으로 2주 연속 실렸고 LLM 검수도 2주 연속 '홍보'로 지적했다. EDU_NOISE 에 'young achievers'·'경진대회' 등을 넣고 STUDENT_WIN_PATTERN 으로 형태까지 잡는다.",
+      "date": "2026-09-21"
+    },
+    {
+      "title": "HD현대중공업, 자율운항 기술 실증 성공…국제 인증 절차 착수",
+      "summary": "HD현대중공업이 자율운항 기술 실증에 성공하고 국제 인증 절차에 들어갔다.",
+      "expect": "keep",
+      "why": "감시 케이스(학생 대회 필터 짝). EDU_NOISE 에 'challenge'·'competition'·'award' 단독을 넣으면 기업의 기술 실증·수주 경쟁 기사가 통째로 사라진다. 학생·대회를 직접 가리키는 말과 'students win' 형태로만 좁혀 둔다.",
+      "date": "2026-09-21"
+    },
+    {
+      "title": "러시아측 \"한화오션 1.37조 물어내라\"…Arctic LNG 2 국제중재 본격화",
+      "summary": "러시아 측이 한화오션을 상대로 낸 국제중재에서 손해배상을 요구하고 있다.",
+      "expect": "keep",
+      "why": "감시 케이스(임금 소송 필터 짝). LABOR_NOISE 에 '소송'·'lawsuit' 단독을 넣으면 사업상 분쟁 기사가 통째로 사라진다. 이 기사는 지난주 뉴스레터에 실린 정상 기사다. 임금·퇴직금을 직접 가리키는 말만 넣어 둔다.",
+      "date": "2026-09-21"
+    },
+    {
+      "title": "한화오션, 가스텍 2026서 차세대 LNG 화물창 기술 공개",
+      "summary": "한화오션이 가스텍 2026에서 차세대 LNG 화물창 기술을 선보였다.",
+      "expect": "keep",
+      "why": "감시 케이스(행사 쏠림 상한 짝). 전시회 기사를 수집 단계에서 빼면 안 된다 — 2026-09-21 피드백에서 고객사 카드의 가스텍 기사 2건은 남기라는 판단이었다. 쏠림은 카드 건수 상한(3_build_html.MAX_CARDS_PER_SHOW)으로 막고, 수집은 그대로 둔다. EVENT_NOISE_TITLE_KEYWORDS 에 '가스텍'·'gastech' 를 넣는 순간 이 케이스가 실패한다.",
+      "date": "2026-09-21"
+    },
+    {
+      "title": "텍사스 입항 유조선 이란 해킹 수사에 국내 기업 포함",
+      "summary": "미국 정부가 텍사스주에 입항 중이던 유조선을 이란 측이 해킹했다는 의혹을 수사 중인 가운데, 국내 기업들도 미국 측 조사를 함께 받은 것으로 확인됐다.",
+      "expect": "keep",
+      "why": "2026-09-21 피드백(n.news.naver.com/article/016/0002699577). 수집 단계에서 통째로 잘렸다 — KEYWORDS 에 여객선·어선·급유선은 있는데 상선 주력 선종(유조선·탱커·VLCC·컨테이너선)이 빠져 있었고, 국내 매체가 이런 사건에 쓰는 '해킹'도 없었다('사이버'만 있었다). 둘 다 넣어 통과시킨다.",
+      "date": "2026-09-21"
+    },
+    {
+      "title": "국내 대기업 해킹 피해 확산…고객 개인정보 유출 조사",
+      "summary": "국내 대기업들이 해킹으로 고객 개인정보가 유출돼 당국이 조사에 나섰다.",
+      "expect": "drop",
+      "why": "감시 케이스(해킹 어휘 짝). KEYWORDS 에 '해킹'을 넣었다고 해서 해사와 무관한 일반 보안 기사까지 들어오면 안 된다. 제목에 해사 어휘가 없으면 has_marine_title 게이트가 막는다 — 그 게이트가 약해지는 순간 이 케이스가 실패한다.",
+      "date": "2026-09-21"
+    },
+    {
+      "title": "삼성중공업, 추석 전 임협 최종 타결…기본급 13만원↑",
+      "summary": "삼성중공업 노동자협의회가 23일 진행한 올해 임협 잠정합의안 찬반투표에서 58.78% 찬성으로 가결됐다.",
+      "expect": "drop",
+      "why": "2026-09-28 피드백. LABOR_NOISE_KEYWORDS 에 '임단협'·'임금협상'은 있었지만 줄임말 '임협'과 '기본급'이 없어 14점으로 고객사 카드에 실렸다.",
+      "date": "2026-09-28"
+    },
+    {
+      "title": "케이조선, 협력사 대금 253억원 조기 지급 - 조선비즈 - Chosunbiz",
+      "summary": "케이조선이 추석 명절을 앞두고 협력사 대금 253억 원을 조기 지급한다.",
+      "expect": "drop",
+      "why": "2026-09-28 피드백. 명절 전 상생 홍보 보도자료. 걸리는 키워드가 없어 13점으로 고객사 카드에 실렸다(업체당 1건 규칙이라 점수와 무관하게 자리를 받는다).",
+      "date": "2026-09-28"
+    },
+    {
+      "title": "케이조선, 석유화학제품운반선 6척 수주…건조대금 2천억원 규모",
+      "summary": "케이조선이 유럽 선사로부터 5만톤급 석유화학제품운반선 6척을 수주했다. 건조대금은 약 2천억원이다.",
+      "expect": "keep",
+      "why": "감시 케이스(대금 조기 지급 짝). '조기 지급'을 막는다고 '대금' 단독을 넣으면 건조대금이 나오는 수주 기사가 통째로 사라진다. 이 케이스가 실패하면 DONATION_NOISE_KEYWORDS 가 너무 넓어진 것이다.",
+      "date": "2026-09-28"
+    },
+    {
+      "title": "선원 최저임금 인상 합의…ILO 해사노동협약 기준 상향",
+      "summary": "ILO 공동해사위원회가 선원 최저기본임금을 인상하는 데 합의했다. 해사노동협약(MLC) 적용 선박에 적용된다.",
+      "expect": "keep",
+      "why": "감시 케이스(임금 어휘 짝). LABOR_NOISE_KEYWORDS 에 '임금' 단독이나 '임금 인상'을 넓게 넣으면 MLC·ILO 규제 기사가 걸린다. 이 케이스가 실패하면 노사 키워드가 규제 기사를 먹고 있는 것이다.",
+      "date": "2026-09-28"
+    },
+    {
+      "title": "HD현대마린솔루션, 상장 후 첫 반기 평균급여 후퇴…\"신규 입사자 증가 영향\"",
+      "summary": "HD현대마린솔루션의 선박 엔진 최적화 기술을 적용한 넵튠의 자동차 운반선. [사진=HD현대마린솔루션] HD현대마린솔루션의 직원 1인당 반기 평균급여가 상장 이후 처음으로 전년 대비 감소했다. 매출과...",
+      "expect": "drop",
+      "why": "2026-09-28 피드백. 반기보고서 직원 급여 기사. 요약 첫 문장이 사진 설명('선박 엔진 최적화 기술')이라 해사 점수를 받아 8점으로 경쟁사 카드에 실렸다. LABOR_NOISE_KEYWORDS 의 '평균급여'로 거른다.",
+      "date": "2026-09-28"
+    },
+    {
+      "title": "Jan Erik Hoff appointed CFO of Kongsberg Maritime - Container News",
+      "summary": "Jan Erik Hoff appointed CFO of Kongsberg Maritime  Container News",
+      "expect": "drop",
+      "lang": "en",
+      "why": "2026-09-28 피드백. PERSONNEL_NOISE_PATTERNS 가 한국어뿐이라 영문 인사 기사가 9점으로 경쟁사 카드 1번에 실렸다.",
+      "date": "2026-09-28"
+    },
+    {
+      "title": "NAVTOR appointed as authorised service partner for maritime navigation simulators",
+      "summary": "NAVTOR has been appointed as the authorised service partner for navigation simulator and ECDIS training systems.",
+      "expect": "keep",
+      "lang": "en",
+      "why": "감시 케이스(영문 인사 패턴 짝). 'appointed' 동사만으로 인사 판정을 하면 협력사·서비스 파트너 지정 같은 사업 기사가 걸린다. 직함(CEO·CFO 등)이 같이 있을 때만 인사다. (2026-10-06: 회사명을 Kongsberg → NAVTOR(경쟁사 태그 경로 유지) 로 바꿨다. 콩스버그는 자율운항 기사만 싣게 되어 이 감시가 엉뚱한 이유로 실패했다 — 감시 대상은 회사가 아니라 '터널'/'appointed' 판정이다.)",
+      "date": "2026-09-28"
+    },
+    {
+      "title": "ONE appoints Jeremy Nixon as new CEO - Splash247",
+      "summary": "",
+      "expect": "keep",
+      "why": "2026-09-28 요청. 직접 고객 선사의 경영진 교체는 사업 정보다(PERSONNEL_KEEP_CUSTOMERS). 요약을 비워 둔 건 일부러다 — 해사어·사업어가 없어도 통과해야 한다.",
+      "date": "2026-09-28"
+    },
+    {
+      "title": "ONE, 신임 CEO에 토시아키 이와이 선임",
+      "summary": "",
+      "expect": "keep",
+      "why": "2026-09-28 요청(위와 같음). 국문 제목은 영문자가 'ONE'·'CEO' 뿐이라 전부 대문자다 — 이걸 '대문자 제목'으로 오인해 ONE 태그를 못 붙인 적이 있다(_mentions_one 주석).",
+      "date": "2026-09-28"
+    },
+    {
+      "title": "해수부·HMM 부산행…부산역 ‘비스퀘어’ 매각 주목 - Naver Blog",
+      "summary": "해수부·HMM 부산행…부산역 ‘비스퀘어’ 매각 주목  Naver Blog",
+      "expect": "drop",
+      "why": "2026-09-28 피드백. 네이버 블로그 게시글이고 내용은 오피스 빌딩 매각이다. HMM 태그로 13점을 받아 신조/조선 칸에 실렸다. is_blog 가 거른다.",
+      "date": "2026-09-28"
+    },
+    {
+      "title": "10조 쓴 HMM, 현대무벡스 지분도 매각···'실탄 확보' 본격화",
+      "summary": "HMM이 보유하던 현대무벡스 지분을 매각해 764억원을 확보했다.",
+      "expect": "drop",
+      "why": "2026-09-28 피드백. 보유 자산을 팔아 현금을 마련하는 재무 기사. CORP_FINANCE_TITLE_KEYWORDS 의 '실탄 확보'·'지분도 매각'으로 거른다.",
+      "date": "2026-09-28"
+    },
+    {
+      "title": "산은·해진공, HMM 지분 매각 재추진…연내 공고 검토",
+      "summary": "산업은행과 한국해양진흥공사가 보유한 HMM 지분 매각을 다시 추진한다. HMM 경영권이 바뀌는 사안이다.",
+      "expect": "keep",
+      "why": "감시 케이스(지분 매각 짝). HMM 자체의 주인이 바뀌는 건은 반드시 실어야 한다. '지분 매각' 단독을 제외 목록에 넣으면 이 기사가 사라진다 — 이 케이스가 실패하면 CORP_FINANCE_TITLE_KEYWORDS 가 너무 넓어진 것이다.",
+      "date": "2026-09-28"
+    },
+    {
+      "title": "한국선급, 미래 해사기술 인재 57명 뽑는다",
+      "summary": "한국선급(KR)이 인공지능(AI)과 원자력선박, 대체연료 등 미래 해사기술 분야의 전문인력 확보에 나선다.",
+      "expect": "drop",
+      "why": "2026-10-06 피드백. 채용 소식이 컴플라이언스 태그로 13점을 받아 실렸다. EVENT_NOISE_TITLE_KEYWORDS 의 채용 표현('명 뽑')으로 거른다.",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "HD현대중공업, 메탄올 추진 엔진 채용한 컨테이너선 인도",
+      "summary": "HD현대중공업이 메탄올 이중연료 엔진을 채용한 컨테이너선을 선주에 인도했다.",
+      "expect": "keep",
+      "why": "감시 케이스(채용 짝). 해사 기사에서 '채용'은 '채택'의 뜻으로 흔히 쓴다. '채용' 단독을 제외 목록에 넣으면 이 기사가 사라진다.",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "<현대해양>창간 57주년 축사 | 해양교통안전 현장의 목소리 <현대해양>",
+      "expect": "drop",
+      "why": "2026-10-06 피드백. 매체 창간 축사. 기술 동향 후보 16점이었다. EVENT_NOISE_TITLE_KEYWORDS 의 '창간'·'축사'로 거른다.",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "HD Hyundai Heavy Industries Union Rejects Provisional Wage Agreement - 조선일보",
+      "expect": "drop",
+      "why": "2026-10-06 피드백. 노조 임금협상 잠정합의안 부결. 영문 표기라 LABOR_NOISE_KEYWORDS 에 안 걸려 14점으로 실렸다.",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "EU reaches provisional agreement on FuelEU Maritime review",
+      "summary": "The European Parliament and Council reached a provisional agreement on shipping emissions rules.",
+      "expect": "keep",
+      "why": "감시 케이스(잠정합의 짝). 'provisional agreement' 단독을 노사 목록에 넣으면 EU 규제 기사가 사라진다.",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "[전문의칼럼] S100 단백 검사의 임상적 유용성과 전망 - 메드월드뉴스",
+      "expect": "drop",
+      "why": "2026-10-06 피드백. 'S-100' 검색어에 의료용 S100 단백이 걸렸다. MEDICAL_NOISE_TITLE_KEYWORDS 로 거른다.",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "UKHO, S-100 기반 차세대 전자해도 시험 운영 시작",
+      "summary": "영국 수로국이 S-100 표준 기반 차세대 전자해도 시험 운영을 시작한다.",
+      "expect": "keep",
+      "why": "감시 케이스(S-100 짝). 의학 기사 제외 규칙이 S-100 전자해도 기사를 건드리면 안 된다.",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "[창간특집][HMM] “바다 위 테슬라 꿈꾼다”… 전 선단에 AI 자율운항 적용",
+      "expect": "keep",
+      "why": "감시 케이스(창간 짝). 창간 기획으로 실린 고객사 AI 자율운항 기사(23점). '창간' 단독을 제외 목록에 넣으면 사라진다.",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "경쟁사2, '베슬링크' 공급 확대 위해 글로벌 협력 강화",
+      "expect": "keep",
+      "why": "2026-10-06 피드백: 경쟁사 경쟁사2 동정(매우 중요). 제목 감지 경로.",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "선박관리업협회, '부산-이마바리 해운산업 교류의 날' 행사 개최",
+      "summary": "△경쟁사2 강민욱 이사가 '당신의 AX는 어디서 시작되나요'를, △한국선급 박상익 수석검사원이... 이어 경쟁사2은 인공지능 활용의 전제조건으로 운항 데이터의 검증 체계를 강조했으며",
+      "expect": "keep",
+      "why": "2026-10-06 피드백: 경쟁사2이 본문(네이버 요약)에만 나오는 동정. COMPETITOR_MENTION_NAMES 로 경쟁사 태그.",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "K조선, 200조 일감 안고 '배 밖'으로…AI·MRO 새 성장축",
+      "expect": "keep",
+      "why": "2026-10-06 피드백: AI×조선 융합. 구글(제목만) 경로에서 해사 키워드 필터 탈락했었다.",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "수주 밀려오자 AI 심는다···한화 방산3사 AX 전환 본격화",
+      "expect": "keep",
+      "why": "2026-10-06 피드백: AI×방산 융합(AX 흐름). 제목에 선박·해운이 없어 탈락했었다. 요약은 실제 네이버 description(2026-10-06). '방산'은 요약에 조선·해군 맥락이 있을 때만 융합으로 본다.",
+      "date": "2026-10-06",
+      "summary": "한화오션도 AX사업부를 중심으로 조선소 생산 현장의 AI 전환을 추진하고 있다. 생성형 AI 기반 스마트야드 구축을 비롯해 현장 자동화, 설계 혁신, 업무 프로세스 고도화 등을 주요 과제로 추진 중이다."
+    },
+    {
+      "title": "조선기자재도 'AI 전환' 시대…55개사 170명 국립한국해양대 집결",
+      "summary": "국립한국해양대학교가 조선·해양산업의 인공지능 전환(AX)을 산업 현장으로 확산하기 위한 실무형 교육과 산학협력을 강화하고 있다.",
+      "expect": "keep",
+      "why": "2026-10-06 피드백: AI×조선기자재 융합. KEYWORDS 에 조선 계열이 없어 탈락했었다.",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "해양산업 AI 전환 지원…해진공 AX 사이트 개통",
+      "expect": "keep",
+      "why": "2026-10-06 피드백: AI×해양 융합. 구글(제목만) 경로에서 탈락했었다.",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "Flexport launches AI automated freight booking and tracking",
+      "source": "Smart Maritime Network",
+      "lang": "en",
+      "expect": "keep",
+      "why": "2026-10-06 피드백: 해외 AI×해운. 전문지 기사인데 제목에 해사어가 없어 탈락했었다(TRADE_PRESS_SOURCES).",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "SpecTec and HarborMax expand AMOS across Asia-Pacific as 100+ vessels use HarborMax ICT",
+      "source": "The Digital Ship",
+      "lang": "en",
+      "expect": "keep",
+      "why": "2026-10-06 피드백: 경쟁사 SpecTec AMOS + 국내 HarborMax. 구글(제목만) 경로에서 사업 맥락 관문 탈락했었다.",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "Ulysses launches AI-powered maritime information Finder",
+      "source": "Smart Maritime Network",
+      "lang": "en",
+      "expect": "keep",
+      "why": "2026-10-06 피드백: 해외 AI×선박관리. 4점으로 상한 컷에서 잘렸었다(ai_marine 가점·슬롯).",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "한국 제안 선상탄소포집 안전지침, IMO 국제표준 논의 기본 문서로 채택",
+      "expect": "keep",
+      "why": "2026-10-06 피드백: 친환경·탈탄소(OCCS).",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "AI·친환경·자율운항 기술력 강화… 미래선박 시장 선도",
+      "expect": "keep",
+      "why": "2026-10-06 피드백: 수집은 됐으나 사건 병합(0.60 경계)에서 다른 HD현대 기사와 잘못 묶였다. 수집 단계 감시용.",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "Kongsberg wins NOK 2 billion NSM missile order from Poland",
+      "lang": "en",
+      "expect": "drop",
+      "why": "2026-10-06 피드백: 콩스버그는 MASS·자율운항만. 방산 기사는 제외.",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "Kongsberg delivers autonomous navigation system for new zero-emission container vessel",
+      "lang": "en",
+      "expect": "keep",
+      "why": "감시 케이스(콩스버그 짝). 자율운항 기사는 실려야 한다.",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "현대차, 친환경 수소차 신모델 출시",
+      "summary": "현대자동차가 친환경 수소전기차 신모델을 공개했다.",
+      "expect": "drop",
+      "why": "감시 케이스(친환경 짝). KEYWORDS 에 '친환경'을 넣었지만 제목 게이트(_TITLE_GATE_EXCLUDE)가 해사 밖 기사를 막아야 한다.",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "경찰, 마약 함정수사로 유통 일당 검거",
+      "expect": "drop",
+      "why": "감시 케이스(함정 짝). '함정' 단독을 넣으면 함정수사가 걸린다.",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "삼성전자, AI 반도체 신제품 공개…엔비디아와 협력",
+      "expect": "drop",
+      "why": "감시 케이스(AI 융합 짝). AI 신호만 있고 조선·해양 산업어가 없으면 융합 기사가 아니다.",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "KT, 충청 제조·방산기업 'AI 전환' 돕는다",
+      "summary": "KT가 충청권 제조·방산 기업의 AI 전환을 지원하는 맞춤형 컨설팅에 나선다.",
+      "expect": "drop",
+      "why": "감시 케이스(방산 짝). 조선·해군 맥락 없는 방산 AI 기사는 융합 기사가 아니다(2026-10-06 실측으로 대량 유입).",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "조선대, AI중심대학 선정…대학 교육체계 대전환",
+      "expect": "drop",
+      "why": "감시 케이스(조선 짝). '조선' 단독을 융합 산업어로 쓰면 조선대학교가 걸린다(2026-10-06 실측).",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "HD현대중공업, 태안 해상에 500㎿급 해상변전소 건설",
+      "expect": "drop",
+      "why": "2026-10-06 피드백. 조선사가 짓는 해상 전력 설비(변전소) — km.NONMARINE_KEYWORDS.",
+      "date": "2026-10-06"
+    },
+    {
+      "title": "HD현대중공업, 해상풍력 설치선 2척 수주",
+      "expect": "keep",
+      "why": "감시 케이스(변전소 짝). 해상풍력 '설치선'은 선박이라 실려야 한다 — '해상풍력' 단독을 제외 목록에 넣으면 사라진다.",
+      "date": "2026-10-06"
+    }
+  ]
+}

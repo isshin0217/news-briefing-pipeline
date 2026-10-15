@@ -1,0 +1,30 @@
+# 비밀/자격증명 (절대 커밋 금지)
+.env
+.env.*
+!.env.example
+
+# 파이썬 캐시
+__pycache__/
+*.pyc
+
+# 파이프라인 생성 산출물 (매 실행 자동 생성)
+raw_news*.json
+summarized_news*.json
+weekly_analysis.json
+weekly_newsletter_*.html
+weekly_email_*.html
+watch_report*.json
+watch_report_*.md
+watch_banner.html
+watch_candidates.json
+publish_history.json
+builds/
+
+# 실행 로그
+*.log
+
+# OS/에디터
+Thumbs.db
+.DS_Store
+.vscode/
+.claude/settings.local.json
