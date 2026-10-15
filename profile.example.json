@@ -1,0 +1,119 @@
+{
+  "_comment": "이 파일을 profile.json 으로 복사해 내 회사/팀에 맞게 수정하세요. profile.json 은 .gitignore 에 포함되어 커밋되지 않습니다. 아래 회사·고객사·경쟁사 구성은 예시입니다.",
+
+  "brand": {
+    "name_ko": "블루하버랩스 기술팀",
+    "name_en": "Blue Harbor Labs Tech Team",
+    "short_ko": "블루하버랩스",
+    "logo": "⚓ Blue Harbor Labs",
+    "briefing_ko": "주간 해사 브리핑",
+    "briefing_en": "Weekly Maritime Briefing",
+    "sender_name": "Blue Harbor Labs Briefing Bot",
+    "contact": "briefing@example.com"
+  },
+
+  "company_context": [
+    "[회사 개요] (가상의 예시 회사)",
+    "- 회사명: 블루하버랩스 (Blue Harbor Labs)",
+    "- 사업 한 줄 요약: 선박 운항 데이터 수집·분석 플랫폼과 선대관리 SaaS를 제공하는 해양 소프트웨어 스타트업",
+    "",
+    "[제품]",
+    "- Vessel Data Hub: 선박 IoT 데이터(항해/엔진/연료) 수집·모니터링 플랫폼",
+    "- Fleet Manager: 구독형 선대관리 SaaS (정비/운항/탄소배출 규제 대응)",
+    "- Route AI: 기상·해상 데이터 기반 항로 최적화",
+    "",
+    "[관심 영역 — 우선순위 순]",
+    "1순위. 스마트십·선박 데이터 플랫폼, 자율운항",
+    "2순위. 선대관리 소프트웨어, 항법(ECDIS/ENC)",
+    "3순위. AI/머신러닝이 선박관리·항로 최적화에 적용되는 사례",
+    "4순위. 규제 대응: IMO 탈탄소(CII/FuelEU/EU ETS), S-100 전환, MASS Code"
+  ],
+
+  "analysis_rules": [
+    "우선순위: 선박 데이터 플랫폼·자율운항 > 선대관리 소프트웨어·항법 > AI가 선박관리에 접목되는 사례.",
+    "'플랫폼'이라는 단어가 있어도 조선소 설계·생산(PLM/디지털트윈) 플랫폼처럼 사업 영역이 다른 기사는 제외하세요.",
+    "AI/머신러닝이 선박관리·스마트십에 실제 적용된 기사는 발견되면 우선 포함하세요."
+  ],
+
+  "sources": [
+    {"name": "Maritime Executive",     "url": "https://maritime-executive.com/rss/articles", "lang": "en"},
+    {"name": "Splash247",              "url": "https://splash247.com/feed/",                 "lang": "en"},
+    {"name": "The Loadstar",           "url": "https://theloadstar.com/feed/",               "lang": "en"},
+    {"name": "Smart Maritime Network", "url": "https://smartmaritimenetwork.com/feed/",      "lang": "en"},
+    {"name": "The Digital Ship",       "url": "https://thedigitalship.com/feed/",            "lang": "en"},
+    {"name": "Safety4Sea",             "url": "https://safety4sea.com/feed/",                "lang": "en"},
+    {"name": "Korea Shipping Gazette", "url": "https://www.ksg.co.kr/rss/allArticle.xml",    "lang": "ko"}
+  ],
+
+  "queries": {
+    "topic_ko": [
+      "자율운항 선박", "스마트십 플랫폼", "전자해도 ECDIS", "선박관리 소프트웨어",
+      "IMO 자율운항 규제", "선박 탈탄소 규제", "친환경 선박 암모니아 메탄올",
+      "AI 스마트십", "AI 선박관리 솔루션"
+    ],
+    "topic_en": [
+      "autonomous ship OR MASS maritime", "smart ship platform", "S-100 ENC electronic chart",
+      "maritime decarbonization CII FuelEU", "AI ship management software",
+      "machine learning vessel performance", "voyage optimization AI"
+    ],
+    "compliance_ko": ["IMO 해사 규제", "선급 규정 해운", "IMO 탄소중립 규제"],
+    "compliance_en": [
+      "IMO regulation shipping", "IACS unified requirements",
+      "IMO MEPC OR MSC decarbonization", "DNV OR ABS classification rules"
+    ],
+    "competitor_ko": ["선박관리 소프트웨어 ERP"],
+    "competitor_en": [
+      "Kongsberg vessel management", "Wartsila Voyage", "Furuno marine electronics"
+    ]
+  },
+
+  "keywords": {
+    "general": [
+      "autonomous", "smart ship", "cyber", "imo", "newbuilding", "lng",
+      "decarbonization", "ammonia", "methanol", "retrofit", "ais",
+      "classification", "shipping", "maritime", "ecdis", "radar", "iacs",
+      "자율운항", "스마트십", "사이버", "신조", "탈탄소", "해운", "선박"
+    ],
+    "core": [
+      "ecdis", "s-100", "enc", "전자해도",
+      "ship management", "fleet management", "선박관리", "선대관리",
+      "autonomous ship", "autonomous vessel", "mass code", "smart ship", "스마트십", "자율운항"
+    ],
+    "related": ["radar", "erp", "iacs", "cii", "fueleu", "eu ets", "선급", "voyage optimization"],
+    "ai_signal": [
+      "ai ", " ai", "artificial intelligence", "machine learning",
+      "머신러닝", "인공지능", "생성형", "genai", "generative ai"
+    ],
+    "ai_target": [
+      "smart ship", "스마트십", "ship management", "선박관리", "fleet", "선대",
+      "자율운항", "autonomous", "vessel performance", "voyage optimization", "항해 최적화"
+    ],
+    "tech_exclude": ["엑스포", "박람회", "파업", "회장 동정"],
+    "compliance": [
+      "imo", "iacs", "dnv", "lloyd's register", "bureau veritas", "classnk", "선급",
+      "mepc", "solas", "marpol", "unified requirement",
+      "eu ets", "fueleu", " cii ", "해사 규제", "환경규제"
+    ]
+  },
+
+  "customers": [
+    {"name": "Maersk",      "name_en": "Maersk",      "group": "carrier",  "aliases": ["maersk", "머스크"]},
+    {"name": "MSC",         "name_en": "MSC",         "group": "carrier",  "aliases": ["mediterranean shipping", "msc "]},
+    {"name": "CMA CGM",     "name_en": "CMA CGM",     "group": "carrier",  "aliases": ["cma cgm"]},
+    {"name": "Hapag-Lloyd", "name_en": "Hapag-Lloyd", "group": "carrier",  "aliases": ["hapag-lloyd", "hapag lloyd", "하팍로이드"]},
+    {"name": "Fincantieri", "name_en": "Fincantieri", "group": "shipyard", "aliases": ["fincantieri"]},
+    {"name": "Meyer Werft", "name_en": "Meyer Werft", "group": "shipyard", "aliases": ["meyer werft"]}
+  ],
+
+  "customer_groups": {
+    "carrier":  {"ko": "해운사", "en": "Carrier"},
+    "shipyard": {"ko": "조선소", "en": "Shipyard"}
+  },
+
+  "competitors": [
+    {"name": "Kongsberg",       "aliases": ["kongsberg"]},
+    {"name": "Wärtsilä Voyage", "aliases": ["wärtsilä voyage", "wartsila voyage", "transas"]},
+    {"name": "Furuno",          "aliases": ["furuno"]},
+    {"name": "Orca AI",         "aliases": ["orca ai", "orca-ai"]}
+  ]
+}

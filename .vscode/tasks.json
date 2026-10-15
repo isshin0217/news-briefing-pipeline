@@ -1,0 +1,16 @@
+{
+  // Ctrl+Shift+B 를 누르면 디버거 없이 터미널에서 바로 전체 파이프라인을 실행합니다.
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "뉴스레터 전체 실행",
+      "type": "shell",
+      "command": "python",
+      "args": ["run_all.py"],
+      "options": { "env": { "PYTHONIOENCODING": "utf-8" } },
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "shared", "clear": true },
+      "problemMatcher": []
+    }
+  ]
+}

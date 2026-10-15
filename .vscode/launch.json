@@ -1,0 +1,25 @@
+{
+  // F5 를 누르면 (어떤 파일을 열어놨든) 뉴스레터 전체 파이프라인을 실행합니다.
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "▶ 뉴스레터 전체 실행 (run_all)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_all.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": { "PYTHONIOENCODING": "utf-8" }
+    },
+    {
+      "name": "▶ 뉴스레터 실행 + 이메일 발송 (--send)",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/run_all.py",
+      "args": ["--send"],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": { "PYTHONIOENCODING": "utf-8" }
+    }
+  ]
+}

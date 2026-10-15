@@ -1,0 +1,26 @@
+# 비밀/자격증명 (절대 커밋 금지)
+.env
+.env.*
+!.env.example
+
+# 파이썬 캐시
+__pycache__/
+*.pyc
+
+# 파이프라인 생성 산출물 (자동 생성되므로 버전관리 제외)
+raw_news.json
+summarized_news.json
+weekly_analysis.json
+newsletter_*.html
+weekly_newsletter_*.html
+weekly_email_*.html
+
+# 실행 로그
+*.log
+
+# OS/에디터
+Thumbs.db
+.DS_Store
+
+# 회사/팀 실제 설정 (profile.example.json 만 커밋)
+profile.json

@@ -1,0 +1,6 @@
+feedparser
+requests
+python-dotenv
+deep-translator
+# Windows Outlook 발송(--outlook) 사용 시에만 필요
+pywin32; sys_platform == "win32"
