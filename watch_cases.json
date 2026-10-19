@@ -733,6 +733,19 @@
       "expect": "keep",
       "why": "감시 케이스(변전소 짝). 해상풍력 '설치선'은 선박이라 실려야 한다 — '해상풍력' 단독을 제외 목록에 넣으면 사라진다.",
       "date": "2026-10-06"
+    },
+    {
+      "title": "Union Leader Launches Crane Sit-in at Hyundai Heavy Industries' Ulsan Yard",
+      "summary": "The head of one of the labor unions at Hyundai Heavy Industries has begun a sit-in on top of a crane at HHI's shipyard in Ulsan.",
+      "expect": "drop",
+      "why": "2026-10-19 피드백. 영문 노조 농성 기사가 20점으로 전체 뉴스에 실렸다. LABOR_NOISE_KEYWORDS 의 'sit-in'·'union leader'로 거른다.",
+      "date": "2026-10-19"
+    },
+    {
+      "title": "HMM boxships sit in queue at Busan as autonomous berthing trial starts",
+      "expect": "keep",
+      "why": "감시 케이스(농성 짝). 하이픈 없는 'sit in'을 노사 목록에 넣으면 선박 대기 기사가 걸린다.",
+      "date": "2026-10-19"
     }
   ]
 }

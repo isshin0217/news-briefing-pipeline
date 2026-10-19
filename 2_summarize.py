@@ -245,6 +245,44 @@ def gemini_translate(jobs: list[dict], target: str) -> dict[int, tuple[str, str]
     return out
 
 
+def drop_translated_noise(summarized: list) -> list:
+    """번역된 한국어 제목으로 수집 단계 제외 규칙을 한 번 더 적용한다.
+
+    2026-10-19 피드백: 영문 기사
+    'Union Leader Launches Crane Sit-in at Hyundai Heavy Industries' Ulsan Yard'가
+    전체 뉴스에 실렸다. 수집 단계(1_fetch_news.make_article)는 원제목만 보는데 영문
+    노사 목록에 'sit-in'·'union leader'가 없어 통과했고(고객사 +6, 20점), 번역된 제목
+    '…노조 위원장 크레인 고공 농성 돌입'은 '노조'로 걸리지만 번역은 수집 다음 단계다.
+
+    영문 표현을 목록에 하나씩 더하는 것만으로는 매번 한발 늦는다. 제외 목록은 한국어
+    쪽이 훨씬 촘촘하니, 번역이 끝난 여기서 한국어 제목으로 한 번 더 본다. 이 파일이
+    summarized_news.json 을 쓰므로 분석·카드·전체 뉴스·메일 모두 이 결과를 따른다.
+    판정 함수는 5_analyze.is_collect_noise 와 같은 것을 쓴다(자사 기사 면제도 같다).
+    """
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "fetch_news", str(Path(__file__).parent / "1_fetch_news.py"))
+    fetch = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(fetch)
+    checks = (fetch.is_event_noise, fetch.is_vendor_promo, fetch.is_donation_noise,
+              fetch.is_labor_noise, fetch.is_stock_title_noise, fetch.is_medical_noise)
+
+    kept = []
+    for art in summarized:
+        title_ko = art.get("title_ko") or ""
+        # 한국어 원문 기사는 수집 단계에서 이미 같은 제목으로 판정받았다.
+        if art.get("own") or art.get("lang") != "en" or not title_ko:
+            kept.append(art)
+            continue
+        if any(f(title_ko) for f in checks):
+            print(f"  · 번역 제목으로 제외: {title_ko[:50]}")
+            continue
+        kept.append(art)
+    if len(kept) != len(summarized):
+        print(f"  번역 후 재판정 {len(summarized) - len(kept)}건 제외")
+    return kept
+
+
 def run():
     raw_path = Path("raw_news.json")
     if not raw_path.exists():
@@ -319,6 +357,8 @@ def run():
               + (f", {len(left)}건은 원문 유지" if left else ""))
         for n in left:
             summarized[n]["translate_failed"] = target
+
+    summarized = drop_translated_noise(summarized)
 
     out = Path("summarized_news.json")
     out.write_text(json.dumps(summarized, ensure_ascii=False, indent=2), encoding="utf-8")

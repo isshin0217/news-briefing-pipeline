@@ -100,6 +100,13 @@ TECH_EXCLUDE_KEYWORDS = [
     # 해당 기업은 우리 경쟁사·고객사가 아니고, 전체 뉴스에는 그대로 남는다.
     "체질전환", "체질 전환", "사업 구조 재편", "사업구조 재편", "사업 재편",
     "영역 확장", "영역을 확장", "사업 다각화", "신사업 진출",
+    # 업무협약(MOU) 발표 (2026-10-19 피드백: '해운협회 부산본부, 선사 AI 전환·기술 실증
+    # 협력' TOP3 이 불필요했다는 지적). 기관끼리 협약을 맺고 과제를
+    # '발굴할 예정'이라는 발표라 아직 실체가 없다. 프롬프트의 '제3자 제휴 기사' 규칙만으로는
+    # 모델이 걸러내지 못했다. 전체 뉴스에는 그대로 남는다.
+    # 'mou' 단독은 넣지 않는다 — 여기 판정은 부분 문자열이라 amount·mouth 에 걸린다.
+    "업무협약", "협약 체결", "협약을 체결", "맞손", "mou 체결", "mou를", "mou 맺",
+    "와 mou", "과 mou", "memorandum of understanding",
 ]
 GROQ_RETRIES = 3         # JSON 파싱 실패 시 재시도 횟수
 GROQ_RATE_RETRIES = 4    # 429(분당 토큰 한도) 재시도 횟수 — 마지막 시도는 그대로 올린다
@@ -362,8 +369,12 @@ def candidate_articles(articles: list) -> list:
     # 고객사/경쟁사/컴플라이언스 기사는 각 전용 섹션에서 결정론적으로 선정하므로 제외.
     # (약한 모델이 눈에 띄는 조선사·고객사 기사를 tech로 잘못 고르는 문제 원천 차단)
     def is_tech_noise(a):
+        # 사건 요약(event_summary)도 본다 (2026-10-19). '해운협회 부산본부, 선사 AI 전환·
+        # 기술 실증 협력'은 제목·스니펫에 '협약'이 없고, 사건 요약에만 "업무협약을
+        # 체결한다"가 있었다. 사건 요약은 본문을 읽고 쓴 한 줄이라 사건 종류가 가장 정확하다.
         t = ((a.get("title_ko") or a.get("title", "")) + " " +
-             (a.get("summary_ko") or a.get("summary", ""))).lower()
+             (a.get("summary_ko") or a.get("summary", "")) + " " +
+             (a.get("event_summary") or "")).lower()
         return any(k in t for k in TECH_EXCLUDE_KEYWORDS)
 
     # 자사(아크메) 기사는 tech 노이즈 필터를 면제한다 — 수집 단계와 같은 이유다
@@ -818,7 +829,15 @@ def merge_metadata(analysis: dict, id_map: dict, pool: list | None = None) -> di
                             or a.get("compliance"))]
 
     def fill_tech_slots(items: list, skip=None) -> list:
-        """기술 동향의 빈 자리를 다음 후보로 채운다 (MAX_TECH_NEWS 까지).
+        """기술 동향의 빈 자리를 다음 후보로 채운다 (최소 2장까지만).
+
+        4장까지 채우던 것을 2장까지로 낮췄다 (2026-10-19 피드백: 대체 게재된
+        '정부·조선업계, 2030년까지 1.4조 투자…AI 조선소 본격화'가 불필요했다는
+        지적). 모델이 4장을 골랐는데 북극 쉬어가기로 1장이 빠지자 코드가
+        다음 점수 기사로 4장을 다시 채웠다. 프롬프트는 '2장이 정답인 주가 대부분'이라고
+        하는데 코드가 그 반대로 할당량을 채운 셈이다. 대체 카드는 모델의 시사점도 없다.
+        그래서 2장 미만일 때만 채우고, 3장처럼 홀수가 남으면 마지막(모델 순위가 가장
+        낮은) 카드를 빼서 2열 그리드를 맞춘다.
 
         후보 목록(candidate_articles)을 그대로 쓴다. 점수순 정렬만 직접 하면 tech 노이즈
         필터(TECH_EXCLUDE_KEYWORDS)를 건너뛰게 된다 — 실측(2026-09-21): 점수만으로
@@ -845,7 +864,11 @@ def merge_metadata(analysis: dict, id_map: dict, pool: list | None = None) -> di
         # 선택에 영향을 주는 별개의 축이다.
         spare.sort(key=lambda a: (a.get("relevance_score", 0), a.get("coverage", 1)),
                    reverse=True)
-        for art in spare[:max(0, MAX_TECH_NEWS - len(items))]:
+        if len(items) > 2 and len(items) % 2:
+            dropped = items.pop()
+            print(f"      · 홀수 정리로 제외: "
+                  f"{(dropped.get('title_ko') or dropped.get('title', ''))[:44]}")
+        for art in spare[:max(0, 2 - len(items))]:
             items.append({
                 "rank": len(items) + 1,
                 **article_fields(art),

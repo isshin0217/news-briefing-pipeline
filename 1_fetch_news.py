@@ -767,6 +767,13 @@ LABOR_NOISE_KEYWORDS = [
     "union rejects", "union rejected", "union approves", "union ratifies",
     "union members reject", "wage agreement", "provisional wage", "tentative wage",
     "합의안 부결", "합의안 가결",
+    # 농성 (2026-10-19 피드백). 실측 제목: 'Union Leader Launches Crane Sit-in at Hyundai
+    # Heavy Industries' Ulsan Yard'(20점, 전체 뉴스 게재). 위 영문 목록에 농성·노조 간부
+    # 표현이 없었다. 번역 후 재판정(2_summarize.drop_translated_noise)도 함께 생겼지만,
+    # 여기서 먼저 걸러야 번역·본문 수집 비용을 아낀다.
+    # 'sit in' (하이픈 없음)은 넣지 않는다 — 'vessels sit in port' 같은 문장에 걸린다.
+    "농성", "sit-in", "union leader", "union chief", "union head", "labor protest",
+    "labour protest", "hunger strike",
     # 직원 급여·연봉 공시 기사 (2026-09-28 피드백). 반기보고서 급여 항목을 풀어쓴 기사로,
     # 노사 소식과 같은 사내 보수 이슈다. 실측: 8점으로 경쟁사 카드에 실렸다(업체당 1건
     # 규칙이라 그 업체의 유일한 기사면 점수와 무관하게 자리를 받는다).
